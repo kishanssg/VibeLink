@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Viewer</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.1.3/css/bootstrap.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+    <style>
+        body {
+            background-color: #121212;
+            color: white;
+        }
+        .modal-content {
+            background-color: #1e1e1e;
+            color: white;
+        }
+        .filter-controls {
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Interactive Viewer</h1>
+    <div class="filter-controls">
+        <label for="filter">Filter:</label>
+        <select id="filter">
+            <option value="all">All</option>
+            <option value="rest">REST</option>
+            <option value="websocket">WebSocket</option>
+            <option value="pii">PII</option>
+        </select>
+    </div>
+    
+    <div id="mermaid">
+        graph TD;
+        A[Node A] --> B[Node B];
+        A --> C[Node C];
+        B --> D[Node D];
+        C --> D;
+    </div>
+    
+    <!-- Modal -->
+    <div class="modal fade" id="schemaModal" tabindex="-1" aria-labelledby="schemaModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="schemaModalLabel">Schema Details</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <!-- Schema details will be populated here -->
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    mermaid.initialize({ startOnLoad: true });
+
+    // Event listener for nodes click
+    document.getElementById('mermaid').addEventListener('click', function(e) {
+        if (e.target.tagName === 'TEXT') {
+            // Display schema details in modal
+            document.querySelector('#schemaModal .modal-body').innerText = 'Details about ' + e.target.innerText;
+            var modal = new bootstrap.Modal(document.getElementById('schemaModal'));
+            modal.show();
+        }
+    });
+
+    // Filter functionality
+    document.getElementById('filter').addEventListener('change', function() {
+        // Implement filtering logic here
+        console.log('Filter applied: ' + this.value);
+    });
+</script>
+
+</body>
+</html>
