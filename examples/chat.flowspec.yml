@@ -1,0 +1,126 @@
+version: "1.0"
+metadata:
+  title: Chat WebSocket API
+  description: Real-time chat application WebSocket API
+  source: asyncapi
+  sourceVersion: 1.0.0
+  generatedAt: 2025-11-02T15:31:26.610Z
+entities:
+  - id: schema:ChatMessage
+    type: schema
+    name: ChatMessage
+    description: A chat message
+    properties:
+      type: object
+      properties:
+        - id
+        - roomId
+        - userId
+        - username
+        - content
+        - timestamp
+  - id: schema:SendMessage
+    type: schema
+    name: SendMessage
+    description: Message to send
+    properties:
+      type: object
+      properties:
+        - roomId
+        - content
+  - id: schema:TypingIndicator
+    type: schema
+    name: TypingIndicator
+    description: Typing indicator event
+    properties:
+      type: object
+      properties:
+        - userId
+        - username
+        - roomId
+        - isTyping
+  - id: schema:PresenceUpdate
+    type: schema
+    name: PresenceUpdate
+    description: User presence update
+    properties:
+      type: object
+      properties:
+        - userId
+        - username
+        - roomId
+        - status
+  - id: websocket:_chat_room_{roomId}
+    type: websocket
+    name: /chat/room/{roomId}
+    description: Chat room channel
+    properties:
+      channel: /chat/room/{roomId}
+  - id: websocket:_chat_typing_{roomId}
+    type: websocket
+    name: /chat/typing/{roomId}
+    description: Typing indicator channel
+    properties:
+      channel: /chat/typing/{roomId}
+  - id: websocket:_chat_presence_{roomId}
+    type: websocket
+    name: /chat/presence/{roomId}
+    description: User presence channel
+    properties:
+      channel: /chat/presence/{roomId}
+flows:
+  - id: flow:subscribe:websocket:_chat_room_{roomId}
+    from: websocket:_chat_room_{roomId}
+    to: schema:ChatMessage
+    method: SUBSCRIBE
+    dataType: message
+    description: Receive messages from the chat room
+  - id: flow:publish:websocket:_chat_room_{roomId}
+    from: schema:SendMessage
+    to: websocket:_chat_room_{roomId}
+    method: PUBLISH
+    dataType: message
+    description: Send messages to the chat room
+  - id: flow:subscribe:websocket:_chat_typing_{roomId}
+    from: websocket:_chat_typing_{roomId}
+    to: schema:TypingIndicator
+    method: SUBSCRIBE
+    dataType: message
+    description: Receive typing indicators
+  - id: flow:publish:websocket:_chat_typing_{roomId}
+    from: schema:TypingIndicator
+    to: websocket:_chat_typing_{roomId}
+    method: PUBLISH
+    dataType: message
+    description: Send typing indicators
+  - id: flow:subscribe:websocket:_chat_presence_{roomId}
+    from: websocket:_chat_presence_{roomId}
+    to: schema:PresenceUpdate
+    method: SUBSCRIBE
+    dataType: message
+    description: Receive presence updates
+dataFlowGraph:
+  nodes:
+    - schema:ChatMessage
+    - schema:SendMessage
+    - schema:TypingIndicator
+    - schema:PresenceUpdate
+    - websocket:_chat_room_{roomId}
+    - websocket:_chat_typing_{roomId}
+    - websocket:_chat_presence_{roomId}
+  edges:
+    - from: websocket:_chat_room_{roomId}
+      to: schema:ChatMessage
+      label: SUBSCRIBE
+    - from: schema:SendMessage
+      to: websocket:_chat_room_{roomId}
+      label: PUBLISH
+    - from: websocket:_chat_typing_{roomId}
+      to: schema:TypingIndicator
+      label: SUBSCRIBE
+    - from: schema:TypingIndicator
+      to: websocket:_chat_typing_{roomId}
+      label: PUBLISH
+    - from: websocket:_chat_presence_{roomId}
+      to: schema:PresenceUpdate
+      label: SUBSCRIBE

@@ -1,0 +1,238 @@
+v: "1.0"
+m:
+  t: Stripe API (Simplified)
+  d: Simplified Stripe API specification for demonstration
+  s: openapi
+  sv: 2023-10-16
+  g: 2025-11-02T15:29:37.594Z
+e:
+  - i: schema:Customer
+    t: schema
+    n: Customer
+    d: A Stripe customer object
+    p:
+      type: object
+      properties:
+        - id
+        - email
+        - name
+        - created
+      required:
+        - id
+  - i: schema:CustomerCreate
+    t: schema
+    n: CustomerCreate
+    d: Parameters for creating a customer
+    p:
+      type: object
+      properties:
+        - email
+        - name
+        - description
+      required: []
+  - i: schema:CustomerList
+    t: schema
+    n: CustomerList
+    d: List of customers
+    p:
+      type: object
+      properties:
+        - data
+        - has_more
+      required: []
+  - i: schema:PaymentIntent
+    t: schema
+    n: PaymentIntent
+    d: A payment intent object
+    p:
+      type: object
+      properties:
+        - id
+        - amount
+        - currency
+        - status
+        - customer
+      required:
+        - id
+        - amount
+        - currency
+  - i: schema:PaymentIntentCreate
+    t: schema
+    n: PaymentIntentCreate
+    d: Parameters for creating a payment intent
+    p:
+      type: object
+      properties:
+        - amount
+        - currency
+        - customer
+      required:
+        - amount
+        - currency
+  - i: schema:Charge
+    t: schema
+    n: Charge
+    d: A charge object
+    p:
+      type: object
+      properties:
+        - id
+        - amount
+        - currency
+        - customer
+        - status
+      required:
+        - id
+        - amount
+  - i: schema:ChargeCreate
+    t: schema
+    n: ChargeCreate
+    d: Parameters for creating a charge
+    p:
+      type: object
+      properties:
+        - amount
+        - currency
+        - customer
+        - source
+      required:
+        - amount
+        - currency
+  - i: endpoint:listCustomers
+    t: endpoint
+    n: GET /customers
+    d: List all customers
+    p:
+      path: /customers
+      method: GET
+      operationId: listCustomers
+      tags:
+        - Customers
+  - i: endpoint:createCustomer
+    t: endpoint
+    n: POST /customers
+    d: Create a customer
+    p:
+      path: /customers
+      method: POST
+      operationId: createCustomer
+      tags:
+        - Customers
+  - i: endpoint:getCustomer
+    t: endpoint
+    n: GET /customers/{id}
+    d: Retrieve a customer
+    p:
+      path: /customers/{id}
+      method: GET
+      operationId: getCustomer
+      tags:
+        - Customers
+  - i: endpoint:createPaymentIntent
+    t: endpoint
+    n: POST /payment_intents
+    d: Create a payment intent
+    p:
+      path: /payment_intents
+      method: POST
+      operationId: createPaymentIntent
+      tags:
+        - PaymentIntents
+  - i: endpoint:createCharge
+    t: endpoint
+    n: POST /charges
+    d: Create a charge
+    p:
+      path: /charges
+      method: POST
+      operationId: createCharge
+      tags:
+        - Charges
+f:
+  - i: flow:response:listCustomers:200
+    fr: endpoint:listCustomers
+    to: schema:CustomerList
+    m: GET
+    dt: response
+    d: "Response 200: A list of customers"
+  - i: flow:request:createCustomer
+    fr: schema:CustomerCreate
+    to: endpoint:createCustomer
+    m: POST
+    dt: request
+    d: Request payload
+  - i: flow:response:createCustomer:200
+    fr: endpoint:createCustomer
+    to: schema:Customer
+    m: POST
+    dt: response
+    d: "Response 200: The created customer"
+  - i: flow:response:getCustomer:200
+    fr: endpoint:getCustomer
+    to: schema:Customer
+    m: GET
+    dt: response
+    d: "Response 200: The customer object"
+  - i: flow:request:createPaymentIntent
+    fr: schema:PaymentIntentCreate
+    to: endpoint:createPaymentIntent
+    m: POST
+    dt: request
+    d: Request payload
+  - i: flow:response:createPaymentIntent:200
+    fr: endpoint:createPaymentIntent
+    to: schema:PaymentIntent
+    m: POST
+    dt: response
+    d: "Response 200: The created payment intent"
+  - i: flow:request:createCharge
+    fr: schema:ChargeCreate
+    to: endpoint:createCharge
+    m: POST
+    dt: request
+    d: Request payload
+  - i: flow:response:createCharge:200
+    fr: endpoint:createCharge
+    to: schema:Charge
+    m: POST
+    dt: response
+    d: "Response 200: The created charge"
+g:
+  n:
+    - schema:Customer
+    - schema:CustomerCreate
+    - schema:CustomerList
+    - schema:PaymentIntent
+    - schema:PaymentIntentCreate
+    - schema:Charge
+    - schema:ChargeCreate
+    - endpoint:listCustomers
+    - endpoint:createCustomer
+    - endpoint:getCustomer
+    - endpoint:createPaymentIntent
+    - endpoint:createCharge
+  e:
+    - fr: endpoint:listCustomers
+      to: schema:CustomerList
+      l: GET
+    - fr: schema:CustomerCreate
+      to: endpoint:createCustomer
+      l: POST
+    - fr: endpoint:createCustomer
+      to: schema:Customer
+      l: POST
+    - fr: endpoint:getCustomer
+      to: schema:Customer
+      l: GET
+    - fr: schema:PaymentIntentCreate
+      to: endpoint:createPaymentIntent
+      l: POST
+    - fr: endpoint:createPaymentIntent
+      to: schema:PaymentIntent
+      l: POST
+    - fr: schema:ChargeCreate
+      to: endpoint:createCharge
+      l: POST
+    - fr: endpoint:createCharge
+      to: schema:Charge
+      l: POST
