@@ -1,0 +1,238 @@
+version: "1.0"
+metadata:
+  title: Stripe API (Simplified)
+  description: Simplified Stripe API specification for demonstration
+  source: openapi
+  sourceVersion: 2023-10-16
+  generatedAt: 2025-11-02T15:28:37.478Z
+entities:
+  - id: schema:Customer
+    type: schema
+    name: Customer
+    description: A Stripe customer object
+    properties:
+      type: object
+      properties:
+        - id
+        - email
+        - name
+        - created
+      required:
+        - id
+  - id: schema:CustomerCreate
+    type: schema
+    name: CustomerCreate
+    description: Parameters for creating a customer
+    properties:
+      type: object
+      properties:
+        - email
+        - name
+        - description
+      required: []
+  - id: schema:CustomerList
+    type: schema
+    name: CustomerList
+    description: List of customers
+    properties:
+      type: object
+      properties:
+        - data
+        - has_more
+      required: []
+  - id: schema:PaymentIntent
+    type: schema
+    name: PaymentIntent
+    description: A payment intent object
+    properties:
+      type: object
+      properties:
+        - id
+        - amount
+        - currency
+        - status
+        - customer
+      required:
+        - id
+        - amount
+        - currency
+  - id: schema:PaymentIntentCreate
+    type: schema
+    name: PaymentIntentCreate
+    description: Parameters for creating a payment intent
+    properties:
+      type: object
+      properties:
+        - amount
+        - currency
+        - customer
+      required:
+        - amount
+        - currency
+  - id: schema:Charge
+    type: schema
+    name: Charge
+    description: A charge object
+    properties:
+      type: object
+      properties:
+        - id
+        - amount
+        - currency
+        - customer
+        - status
+      required:
+        - id
+        - amount
+  - id: schema:ChargeCreate
+    type: schema
+    name: ChargeCreate
+    description: Parameters for creating a charge
+    properties:
+      type: object
+      properties:
+        - amount
+        - currency
+        - customer
+        - source
+      required:
+        - amount
+        - currency
+  - id: endpoint:listCustomers
+    type: endpoint
+    name: GET /customers
+    description: List all customers
+    properties:
+      path: /customers
+      method: GET
+      operationId: listCustomers
+      tags:
+        - Customers
+  - id: endpoint:createCustomer
+    type: endpoint
+    name: POST /customers
+    description: Create a customer
+    properties:
+      path: /customers
+      method: POST
+      operationId: createCustomer
+      tags:
+        - Customers
+  - id: endpoint:getCustomer
+    type: endpoint
+    name: GET /customers/{id}
+    description: Retrieve a customer
+    properties:
+      path: /customers/{id}
+      method: GET
+      operationId: getCustomer
+      tags:
+        - Customers
+  - id: endpoint:createPaymentIntent
+    type: endpoint
+    name: POST /payment_intents
+    description: Create a payment intent
+    properties:
+      path: /payment_intents
+      method: POST
+      operationId: createPaymentIntent
+      tags:
+        - PaymentIntents
+  - id: endpoint:createCharge
+    type: endpoint
+    name: POST /charges
+    description: Create a charge
+    properties:
+      path: /charges
+      method: POST
+      operationId: createCharge
+      tags:
+        - Charges
+flows:
+  - id: flow:response:listCustomers:200
+    from: endpoint:listCustomers
+    to: schema:CustomerList
+    method: GET
+    dataType: response
+    description: "Response 200: A list of customers"
+  - id: flow:request:createCustomer
+    from: schema:CustomerCreate
+    to: endpoint:createCustomer
+    method: POST
+    dataType: request
+    description: Request payload
+  - id: flow:response:createCustomer:200
+    from: endpoint:createCustomer
+    to: schema:Customer
+    method: POST
+    dataType: response
+    description: "Response 200: The created customer"
+  - id: flow:response:getCustomer:200
+    from: endpoint:getCustomer
+    to: schema:Customer
+    method: GET
+    dataType: response
+    description: "Response 200: The customer object"
+  - id: flow:request:createPaymentIntent
+    from: schema:PaymentIntentCreate
+    to: endpoint:createPaymentIntent
+    method: POST
+    dataType: request
+    description: Request payload
+  - id: flow:response:createPaymentIntent:200
+    from: endpoint:createPaymentIntent
+    to: schema:PaymentIntent
+    method: POST
+    dataType: response
+    description: "Response 200: The created payment intent"
+  - id: flow:request:createCharge
+    from: schema:ChargeCreate
+    to: endpoint:createCharge
+    method: POST
+    dataType: request
+    description: Request payload
+  - id: flow:response:createCharge:200
+    from: endpoint:createCharge
+    to: schema:Charge
+    method: POST
+    dataType: response
+    description: "Response 200: The created charge"
+dataFlowGraph:
+  nodes:
+    - schema:Customer
+    - schema:CustomerCreate
+    - schema:CustomerList
+    - schema:PaymentIntent
+    - schema:PaymentIntentCreate
+    - schema:Charge
+    - schema:ChargeCreate
+    - endpoint:listCustomers
+    - endpoint:createCustomer
+    - endpoint:getCustomer
+    - endpoint:createPaymentIntent
+    - endpoint:createCharge
+  edges:
+    - from: endpoint:listCustomers
+      to: schema:CustomerList
+      label: GET
+    - from: schema:CustomerCreate
+      to: endpoint:createCustomer
+      label: POST
+    - from: endpoint:createCustomer
+      to: schema:Customer
+      label: POST
+    - from: endpoint:getCustomer
+      to: schema:Customer
+      label: GET
+    - from: schema:PaymentIntentCreate
+      to: endpoint:createPaymentIntent
+      label: POST
+    - from: endpoint:createPaymentIntent
+      to: schema:PaymentIntent
+      label: POST
+    - from: schema:ChargeCreate
+      to: endpoint:createCharge
+      label: POST
+    - from: endpoint:createCharge
+      to: schema:Charge
+      label: POST

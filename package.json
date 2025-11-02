@@ -1,0 +1,34 @@
+{
+  "name": "vibelink",
+  "version": "1.0.0",
+  "description": "focuses on how APIs are wired and data is flowing in them, then makes a files which is compressed but has all the info/metal modal called a FlowSpec.",
+  "type": "module",
+  "main": "dist/cli/index.js",
+  "bin": {
+    "vibelink": "./dist/cli/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsx src/cli/index.ts",
+    "test": "vitest",
+    "test:ui": "vitest --ui"
+  },
+  "keywords": ["openapi", "asyncapi", "flowspec", "api", "documentation", "visualization"],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "@types/js-yaml": "^4.0.9",
+    "commander": "^14.0.2",
+    "js-yaml": "^4.1.0",
+    "openapi-types": "^12.1.3",
+    "typescript": "^5.9.3",
+    "yaml": "^2.8.1",
+    "zod": "^4.1.12"
+  },
+  "devDependencies": {
+    "@types/node": "^24.9.2",
+    "@vitest/ui": "^4.0.6",
+    "tsx": "^4.20.6",
+    "vitest": "^4.0.6"
+  }
+}
