@@ -1,0 +1,173 @@
+{
+  "asyncapi": "2.6.0",
+  "info": {
+    "title": "Chat WebSocket API",
+    "version": "1.0.0",
+    "description": "Real-time chat application WebSocket API"
+  },
+  "servers": {
+    "production": {
+      "url": "wss://chat.example.com",
+      "protocol": "wss"
+    }
+  },
+  "channels": {
+    "/chat/room/{roomId}": {
+      "description": "Chat room channel",
+      "parameters": {
+        "roomId": {
+          "description": "Room identifier",
+          "schema": {
+            "type": "string"
+          }
+        }
+      },
+      "subscribe": {
+        "description": "Receive messages from the chat room",
+        "message": {
+          "name": "chatMessage",
+          "payload": {
+            "$ref": "#/components/schemas/ChatMessage"
+          }
+        }
+      },
+      "publish": {
+        "description": "Send messages to the chat room",
+        "message": {
+          "name": "sendMessage",
+          "payload": {
+            "$ref": "#/components/schemas/SendMessage"
+          }
+        }
+      }
+    },
+    "/chat/typing/{roomId}": {
+      "description": "Typing indicator channel",
+      "subscribe": {
+        "description": "Receive typing indicators",
+        "message": {
+          "payload": {
+            "$ref": "#/components/schemas/TypingIndicator"
+          }
+        }
+      },
+      "publish": {
+        "description": "Send typing indicators",
+        "message": {
+          "payload": {
+            "$ref": "#/components/schemas/TypingIndicator"
+          }
+        }
+      }
+    },
+    "/chat/presence/{roomId}": {
+      "description": "User presence channel",
+      "subscribe": {
+        "description": "Receive presence updates",
+        "message": {
+          "payload": {
+            "$ref": "#/components/schemas/PresenceUpdate"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "ChatMessage": {
+        "type": "object",
+        "description": "A chat message",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Message ID"
+          },
+          "roomId": {
+            "type": "string",
+            "description": "Room ID"
+          },
+          "userId": {
+            "type": "string",
+            "description": "User ID of sender"
+          },
+          "username": {
+            "type": "string",
+            "description": "Username of sender"
+          },
+          "content": {
+            "type": "string",
+            "description": "Message content"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Message timestamp"
+          }
+        },
+        "required": ["id", "roomId", "userId", "username", "content", "timestamp"]
+      },
+      "SendMessage": {
+        "type": "object",
+        "description": "Message to send",
+        "properties": {
+          "roomId": {
+            "type": "string",
+            "description": "Room ID"
+          },
+          "content": {
+            "type": "string",
+            "description": "Message content"
+          }
+        },
+        "required": ["roomId", "content"]
+      },
+      "TypingIndicator": {
+        "type": "object",
+        "description": "Typing indicator event",
+        "properties": {
+          "userId": {
+            "type": "string",
+            "description": "User ID"
+          },
+          "username": {
+            "type": "string",
+            "description": "Username"
+          },
+          "roomId": {
+            "type": "string",
+            "description": "Room ID"
+          },
+          "isTyping": {
+            "type": "boolean",
+            "description": "Whether user is typing"
+          }
+        },
+        "required": ["userId", "username", "roomId", "isTyping"]
+      },
+      "PresenceUpdate": {
+        "type": "object",
+        "description": "User presence update",
+        "properties": {
+          "userId": {
+            "type": "string",
+            "description": "User ID"
+          },
+          "username": {
+            "type": "string",
+            "description": "Username"
+          },
+          "roomId": {
+            "type": "string",
+            "description": "Room ID"
+          },
+          "status": {
+            "type": "string",
+            "enum": ["online", "offline", "away"],
+            "description": "User status"
+          }
+        },
+        "required": ["userId", "username", "roomId", "status"]
+      }
+    }
+  }
+}
