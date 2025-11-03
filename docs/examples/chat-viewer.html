@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chat WebSocket API - FlowSpec Viewer</title>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: #0d1117;
+      color: #c9d1d9;
+      padding: 20px;
+      line-height: 1.6;
+    }
+    
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+    
+    header {
+      background: #161b22;
+      border: 1px solid #30363d;
+      border-radius: 6px;
+      padding: 24px;
+      margin-bottom: 20px;
+    }
+    
+    h1 {
+      font-size: 2em;
+      margin-bottom: 8px;
+      color: #58a6ff;
+    }
+    
+    .metadata {
+      color: #8b949e;
+      font-size: 0.9em;
+    }
+    
+    .controls {
+      background: #161b22;
+      border: 1px solid #30363d;
+      border-radius: 6px;
+      padding: 16px;
+      margin-bottom: 20px;
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    
+    .controls h3 {
+      flex: 1;
+      margin: 0;
+      font-size: 1.1em;
+    }
+    
+    button {
+      background: #238636;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: background 0.2s;
+    }
+    
+    button:hover {
+      background: #2ea043;
+    }
+    
+    button.secondary {
+      background: #21262d;
+    }
+    
+    button.secondary:hover {
+      background: #30363d;
+    }
+    
+    button.active {
+      background: #1f6feb;
+    }
+    
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+    
+    .stat-card {
+      background: #161b22;
+      border: 1px solid #30363d;
+      border-radius: 6px;
+      padding: 16px;
+      text-align: center;
+    }
+    
+    .stat-value {
+      font-size: 2em;
+      font-weight: bold;
+      color: #58a6ff;
+    }
+    
+    .stat-label {
+      color: #8b949e;
+      font-size: 0.9em;
+      margin-top: 4px;
+    }
+    
+    #graph-container {
+      background: #0d1117;
+      border: 1px solid #30363d;
+      border-radius: 6px;
+      padding: 20px;
+      min-height: 600px;
+      overflow-x: auto;
+    }
+    
+    #overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.8);
+      z-index: 999;
+      animation: fadeIn 0.2s;
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    
+    #schema-modal {
+      display: none;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: #161b22;
+      border: 1px solid #30363d;
+      border-radius: 6px;
+      padding: 24px;
+      max-width: 800px;
+      max-height: 80vh;
+      overflow-y: auto;
+      z-index: 1000;
+      box-shadow: 0 16px 70px rgba(0, 0, 0, 0.5);
+      animation: slideIn 0.3s;
+    }
+    
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translate(-50%, -45%);
+      }
+      to {
+        opacity: 1;
+        transform: translate(-50%, -50%);
+      }
+    }
+    
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid #30363d;
+    }
+    
+    .modal-header h2 {
+      color: #58a6ff;
+      margin: 0;
+    }
+    
+    .close-btn {
+      background: #da3633;
+      padding: 4px 12px;
+      font-size: 16px;
+      font-weight: bold;
+    }
+    
+    .close-btn:hover {
+      background: #f85149;
+    }
+    
+    pre {
+      background: #0d1117;
+      border: 1px solid #30363d;
+      border-radius: 6px;
+      padding: 16px;
+      overflow-x: auto;
+      font-family: 'SF Mono', Monaco, Consolas, monospace;
+      font-size: 0.9em;
+    }
+    
+    .legend {
+      background: #161b22;
+      border: 1px solid #30363d;
+      border-radius: 6px;
+      padding: 16px;
+      margin-top: 20px;
+    }
+    
+    .legend h3 {
+      margin-bottom: 12px;
+      font-size: 1em;
+    }
+    
+    .legend-items {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 12px;
+    }
+    
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .legend-color {
+      width: 20px;
+      height: 20px;
+      border-radius: 3px;
+    }
+    
+    .color-endpoint { background: #238636; }
+    .color-schema { background: #1f6feb; }
+    .color-websocket { background: #da3633; }
+    .color-pii { background: #f85149; border: 2px solid #da3633; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>🔗 Chat WebSocket API</h1>
+      <div class="metadata">
+        Generated: 11/3/2025, 12:57:44 AM
+      </div>
+    </header>
+    
+    <div class="stats">
+      <div class="stat-card">
+        <div class="stat-value">7</div>
+        <div class="stat-label">Entities</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value">5</div>
+        <div class="stat-label">Data Flows</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="pii-count">0</div>
+        <div class="stat-label">PII Entities</div>
+      </div>
+      <div class="stat-card" id="token-stat-card" style="display: none;">
+        <div class="stat-value" id="token-count">-</div>
+        <div class="stat-label">Tokens</div>
+      </div>
+      <div class="stat-card" id="compression-stat-card" style="display: none;">
+        <div class="stat-value" id="compression-ratio">-</div>
+        <div class="stat-label">Compression</div>
+      </div>
+    </div>
+    
+    <div class="controls">
+      <h3>🎛️ Filters</h3>
+      <button id="filter-rest" class="active" onclick="toggleFilter('rest')">
+        REST Endpoints
+      </button>
+      <button id="filter-websocket" class="active" onclick="toggleFilter('websocket')">
+        WebSockets
+      </button>
+      <button id="filter-pii" class="secondary" onclick="toggleFilter('pii')">
+        PII Only
+      </button>
+      <button class="secondary" onclick="resetFilters()">
+        Reset All
+      </button>
+    </div>
+    
+    <div id="graph-container">
+      <pre class="mermaid" id="mermaid-diagram">
+graph LR
+    schema_ChatMessage[(ChatMessage)]
+    schema_SendMessage[(SendMessage)]
+    schema_TypingIndicator[(TypingIndicator)]
+    schema_PresenceUpdate[(PresenceUpdate)]
+    websocket__chat_room__roomId_{{/chat/room/{roomId}}}
+    websocket__chat_typing__roomId_{{/chat/typing/{roomId}}}
+    websocket__chat_presence__roomId_{{/chat/presence/{roomId}}}
+    websocket__chat_room__roomId_ -->|SUBSCRIBE message| schema_ChatMessage
+    schema_SendMessage -->|PUBLISH message| websocket__chat_room__roomId_
+    websocket__chat_typing__roomId_ -->|SUBSCRIBE message| schema_TypingIndicator
+    schema_TypingIndicator -->|PUBLISH message| websocket__chat_typing__roomId_
+    websocket__chat_presence__roomId_ -->|SUBSCRIBE message| schema_PresenceUpdate
+    click schema_ChatMessage call showSchema('schema_ChatMessage')
+    click schema_SendMessage call showSchema('schema_SendMessage')
+    click schema_TypingIndicator call showSchema('schema_TypingIndicator')
+    click schema_PresenceUpdate call showSchema('schema_PresenceUpdate')
+    click websocket__chat_room__roomId_ call showSchema('websocket__chat_room__roomId_')
+    click websocket__chat_typing__roomId_ call showSchema('websocket__chat_typing__roomId_')
+    click websocket__chat_presence__roomId_ call showSchema('websocket__chat_presence__roomId_')
+
+    classDef endpoint fill:#238636,stroke:#2ea043,color:#fff,stroke-width:2px
+    classDef schema fill:#1f6feb,stroke:#58a6ff,color:#fff,stroke-width:2px
+    classDef websocket fill:#da3633,stroke:#f85149,color:#fff,stroke-width:2px
+    classDef pii fill:#f85149,stroke:#da3633,color:#fff,stroke-width:3px
+
+    class schema_ChatMessage schema
+    class schema_SendMessage schema
+    class schema_TypingIndicator schema
+    class schema_PresenceUpdate schema
+    class websocket__chat_room__roomId_ websocket
+    class websocket__chat_typing__roomId_ websocket
+    class websocket__chat_presence__roomId_ websocket
+      </pre>
+    </div>
+    
+    <div class="legend">
+      <h3>📊 Legend</h3>
+      <div class="legend-items">
+        <div class="legend-item">
+          <div class="legend-color color-endpoint"></div>
+          <span>REST Endpoint</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-color color-schema"></div>
+          <span>Data Schema</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-color color-websocket"></div>
+          <span>WebSocket Channel</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-color color-pii"></div>
+          <span>Contains PII</span>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <div id="overlay" onclick="closeModal()"></div>
+  <div id="schema-modal">
+    <div class="modal-header">
+      <h2 id="schema-title">Schema Details</h2>
+      <button class="close-btn" onclick="closeModal()">✕</button>
+    </div>
+    <div id="schema-content"></div>
+  </div>
+  
+  <script>
+    // Embedded data
+    const flowspec = {"version":"1.0","metadata":{"title":"Chat WebSocket API","description":"Real-time chat application WebSocket API","source":"asyncapi","sourceVersion":"1.0.0","generatedAt":"2025-11-03T05:57:44.485Z"},"entities":[{"id":"schema:ChatMessage","type":"schema","name":"ChatMessage","description":"A chat message","properties":{"type":"object","properties":["id","roomId","userId","username","content","timestamp"]},"pii":false},{"id":"schema:SendMessage","type":"schema","name":"SendMessage","description":"Message to send","properties":{"type":"object","properties":["roomId","content"]},"pii":false},{"id":"schema:TypingIndicator","type":"schema","name":"TypingIndicator","description":"Typing indicator event","properties":{"type":"object","properties":["userId","username","roomId","isTyping"]},"pii":false},{"id":"schema:PresenceUpdate","type":"schema","name":"PresenceUpdate","description":"User presence update","properties":{"type":"object","properties":["userId","username","roomId","status"]},"pii":false},{"id":"websocket:_chat_room_{roomId}","type":"websocket","name":"/chat/room/{roomId}","description":"Chat room channel","properties":{"channel":"/chat/room/{roomId}"},"pii":false},{"id":"websocket:_chat_typing_{roomId}","type":"websocket","name":"/chat/typing/{roomId}","description":"Typing indicator channel","properties":{"channel":"/chat/typing/{roomId}"},"pii":false},{"id":"websocket:_chat_presence_{roomId}","type":"websocket","name":"/chat/presence/{roomId}","description":"User presence channel","properties":{"channel":"/chat/presence/{roomId}"},"pii":false}],"flows":[{"id":"flow:subscribe:websocket:_chat_room_{roomId}","from":"websocket:_chat_room_{roomId}","to":"schema:ChatMessage","method":"SUBSCRIBE","dataType":"message","description":"Receive messages from the chat room"},{"id":"flow:publish:websocket:_chat_room_{roomId}","from":"schema:SendMessage","to":"websocket:_chat_room_{roomId}","method":"PUBLISH","dataType":"message","description":"Send messages to the chat room"},{"id":"flow:subscribe:websocket:_chat_typing_{roomId}","from":"websocket:_chat_typing_{roomId}","to":"schema:TypingIndicator","method":"SUBSCRIBE","dataType":"message","description":"Receive typing indicators"},{"id":"flow:publish:websocket:_chat_typing_{roomId}","from":"schema:TypingIndicator","to":"websocket:_chat_typing_{roomId}","method":"PUBLISH","dataType":"message","description":"Send typing indicators"},{"id":"flow:subscribe:websocket:_chat_presence_{roomId}","from":"websocket:_chat_presence_{roomId}","to":"schema:PresenceUpdate","method":"SUBSCRIBE","dataType":"message","description":"Receive presence updates"}],"dataFlowGraph":{"nodes":["schema:ChatMessage","schema:SendMessage","schema:TypingIndicator","schema:PresenceUpdate","websocket:_chat_room_{roomId}","websocket:_chat_typing_{roomId}","websocket:_chat_presence_{roomId}"],"edges":[{"from":"websocket:_chat_room_{roomId}","to":"schema:ChatMessage","label":"SUBSCRIBE"},{"from":"schema:SendMessage","to":"websocket:_chat_room_{roomId}","label":"PUBLISH"},{"from":"websocket:_chat_typing_{roomId}","to":"schema:TypingIndicator","label":"SUBSCRIBE"},{"from":"schema:TypingIndicator","to":"websocket:_chat_typing_{roomId}","label":"PUBLISH"},{"from":"websocket:_chat_presence_{roomId}","to":"schema:PresenceUpdate","label":"SUBSCRIBE"}]}};
+    const expandedSchemas = {};
+    const tokenStats = {"original":928,"compressed":928,"reduction":1};
+    
+    // Filter state
+    let filters = {
+      rest: true,
+      websocket: true,
+      pii: false
+    };
+    
+    // Initialize Mermaid
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: 'dark',
+      securityLevel: 'loose',
+      flowchart: {
+        useMaxWidth: true,
+        htmlLabels: true,
+        curve: 'basis'
+      }
+    });
+    
+    // Calculate PII count and display token stats
+    window.addEventListener('DOMContentLoaded', () => {
+      const piiCount = flowspec.entities.filter(e => e.pii).length;
+      document.getElementById('pii-count').textContent = piiCount;
+      
+      // Display token statistics if available
+      if (tokenStats && tokenStats.original) {
+        document.getElementById('token-stat-card').style.display = 'block';
+        document.getElementById('token-count').textContent = tokenStats.compressed.toLocaleString();
+        
+        if (tokenStats.reduction > 1) {
+          document.getElementById('compression-stat-card').style.display = 'block';
+          document.getElementById('compression-ratio').textContent = tokenStats.reduction.toFixed(1) + '×';
+        }
+      }
+    });
+    
+    /**
+     * Show schema details in modal
+     */
+    window.showSchema = function(hash) {
+      // Try to get schema from expanded schemas first
+      let schema = expandedSchemas[hash];
+      
+      // If not found, try to find entity by hash or id
+      if (!schema) {
+        const entity = flowspec.entities.find(e => 
+          (e.hash === hash || e.id === hash || e.id.endsWith(hash))
+        );
+        if (entity) {
+          schema = {
+            name: entity.name,
+            type: entity.type,
+            description: entity.description,
+            properties: entity.properties
+          };
+        }
+      }
+      
+      if (!schema) {
+        console.warn('Schema not found for hash:', hash);
+        document.getElementById('schema-title').textContent = 'Schema Not Found';
+        document.getElementById('schema-content').innerHTML = `
+          <p>Could not find schema for identifier: <code>${hash}</code></p>
+          <p>This might be a compressed entity. Try using the <code>--compress</code> flag when generating the viewer.</p>
+        `;
+        document.getElementById('overlay').style.display = 'block';
+        document.getElementById('schema-modal').style.display = 'block';
+        return;
+      }
+      
+      document.getElementById('schema-title').textContent = schema.name || 'Schema';
+      document.getElementById('schema-content').innerHTML = `
+        <p><strong>Type:</strong> ${schema.type || 'N/A'}</p>
+        ${schema.description ? `<p><strong>Description:</strong> ${schema.description}</p>` : ''}
+        <h3>Properties:</h3>
+        <pre>${JSON.stringify(schema.properties, null, 2)}</pre>
+      `;
+      
+      document.getElementById('overlay').style.display = 'block';
+      document.getElementById('schema-modal').style.display = 'block';
+    };
+    
+    /**
+     * Close modal
+     */
+    function closeModal() {
+      document.getElementById('overlay').style.display = 'none';
+      document.getElementById('schema-modal').style.display = 'none';
+    }
+    
+    /**
+     * Toggle filter
+     */
+    function toggleFilter(type) {
+      if (type === 'pii') {
+        // PII filter is exclusive
+        filters.pii = !filters.pii;
+        filters.rest = !filters.pii;
+        filters.websocket = !filters.pii;
+      } else {
+        filters[type] = !filters[type];
+        filters.pii = false;
+      }
+      
+      updateFilterButtons();
+      renderGraph();
+    }
+    
+    /**
+     * Reset all filters
+     */
+    function resetFilters() {
+      filters = { rest: true, websocket: true, pii: false };
+      updateFilterButtons();
+      renderGraph();
+    }
+    
+    /**
+     * Update filter button states
+     */
+    function updateFilterButtons() {
+      document.getElementById('filter-rest').className = filters.rest ? 'active' : 'secondary';
+      document.getElementById('filter-websocket').className = filters.websocket ? 'active' : 'secondary';
+      document.getElementById('filter-pii').className = filters.pii ? 'active' : 'secondary';
+    }
+    
+    /**
+     * Render graph with current filters
+     */
+    function renderGraph() {
+      const filteredEntities = flowspec.entities.filter(entity => {
+        if (filters.pii) {
+          return entity.pii === true;
+        }
+        
+        if (entity.type === 'endpoint' && !filters.rest) return false;
+        if (entity.type === 'websocket' && !filters.websocket) return false;
+        
+        return true;
+      });
+      
+      const filteredEntityIds = new Set(filteredEntities.map(e => e.id));
+      
+      const filteredFlows = flowspec.flows.filter(flow => 
+        filteredEntityIds.has(flow.from) && filteredEntityIds.has(flow.to)
+      );
+      
+      // Regenerate Mermaid diagram
+      const diagram = generateMermaidDiagram(filteredEntities, filteredFlows);
+      document.getElementById('mermaid-diagram').textContent = diagram;
+      
+      // Re-render Mermaid
+      mermaid.init(undefined, document.querySelectorAll('.mermaid'));
+    }
+    
+    /**
+     * Generate Mermaid diagram code
+     */
+    function generateMermaidDiagram(entities, flows) {
+      const lines = ['graph LR'];
+      
+      // Add entities
+      entities.forEach(entity => {
+        const shape = getNodeShape(entity.type);
+        const label = escapeLabel(entity.name);
+        const piiIndicator = entity.pii ? ' 🔒' : '';
+        const nodeId = sanitizeId(entity.id);
+        
+        lines.push(`    ${nodeId}${shape.start}${label}${piiIndicator}${shape.end}`);
+      });
+      
+      // Add flows
+      flows.forEach(flow => {
+        const from = sanitizeId(flow.from);
+        const to = sanitizeId(flow.to);
+        const label = getFlowLabel(flow);
+        
+        if (flow.dataType === 'request') {
+          lines.push(`    ${from} ==>|${label}| ${to}`);
+        } else if (flow.dataType === 'response') {
+          lines.push(`    ${from} -.->|${label}| ${to}`);
+        } else {
+          lines.push(`    ${from} -->|${label}| ${to}`);
+        }
+      });
+      
+      // Add click handlers
+      entities.forEach(entity => {
+        const nodeId = sanitizeId(entity.id);
+        const hash = entity.hash || nodeId;
+        lines.push(`    click ${nodeId} call showSchema('${hash}')`);
+      });
+      
+      // Add styles
+      lines.push('');
+      lines.push('    classDef endpoint fill:#238636,stroke:#2ea043,color:#fff,stroke-width:2px');
+      lines.push('    classDef schema fill:#1f6feb,stroke:#58a6ff,color:#fff,stroke-width:2px');
+      lines.push('    classDef websocket fill:#da3633,stroke:#f85149,color:#fff,stroke-width:2px');
+      lines.push('    classDef pii fill:#f85149,stroke:#da3633,color:#fff,stroke-width:3px');
+      lines.push('');
+      
+      entities.forEach(entity => {
+        const nodeId = sanitizeId(entity.id);
+        const styleClass = entity.pii ? 'pii' : entity.type;
+        lines.push(`    class ${nodeId} ${styleClass}`);
+      });
+      
+      return lines.join('\n');
+    }
+    
+    function getNodeShape(type) {
+      switch (type) {
+        case 'endpoint': return { start: '[', end: ']' };
+        case 'schema': return { start: '[(', end: ')]' };
+        case 'websocket': return { start: '{{', end: '}}' };
+        default: return { start: '(', end: ')' };
+      }
+    }
+    
+    function getFlowLabel(flow) {
+      const parts = [];
+      if (flow.method) parts.push(flow.method);
+      if (flow.dataType) parts.push(flow.dataType);
+      return parts.join(' ') || 'data';
+    }
+    
+    function sanitizeId(id) {
+      return id.replace(/[^a-zA-Z0-9_]/g, '_');
+    }
+    
+    function escapeLabel(label) {
+      return label.replace(/"/g, '&quot;');
+    }
+  </script>
+</body>
+</html>
